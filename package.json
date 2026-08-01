@@ -13,7 +13,12 @@
     "dev:api": "bun --cwd apps/api dev",
     "dev": "turbo dev",
     "build": "turbo build",
-    "lint": "turbo lint"
+    "lint": "turbo lint",
+    "db:generate": "bun x prisma generate --schema=packages/database/prisma/schema.prisma",
+    "db:migrate": "bun x prisma migrate dev --config=packages/database/prisma.config.ts",
+    "db:push": "bun x prisma db push --config=packages/database/prisma.config.ts",
+    "db:seed": "bun packages/database/prisma/seed.ts",
+    "db:studio": "bun x prisma studio --config=packages/database/prisma.config.ts"
   },
   "devDependencies": {
     "@types/bun": "latest",
