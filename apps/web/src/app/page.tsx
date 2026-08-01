@@ -1,65 +1,110 @@
-import Image from "next/image";
+"use client";
+
+import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { FolderKanban, ShieldCheck, Zap, Users, ArrowRight, Github } from "lucide-react";
+import { useSession } from "@/lib/auth-client";
 
 export default function Home() {
+  const { data: session } = useSession();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-indigo-500 selection:text-white">
+      <Navbar />
+
+      {/* Hero Section */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center relative overflow-hidden">
+        {/* Background glow effects */}
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-indigo-600/20 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-60 right-10 w-[300px] h-[300px] bg-purple-600/15 blur-[100px] rounded-full pointer-events-none" />
+
+        <div className="relative z-10 max-w-4xl space-y-8">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full glass border border-indigo-500/30 text-xs font-semibold text-indigo-300 shadow-inner">
+            <Zap className="h-3.5 w-3.5 text-indigo-400" />
+            <span>Developer Workspace v0.1 MVP Release</span>
+          </div>
+
+          <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight text-white">
+            Unified Platform for <br className="hidden sm:inline" />
+            <span className="gradient-text">Developer Projects & Teams</span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="text-base md:text-lg text-slate-400 max-w-2xl mx-auto leading-relaxed">
+            Manage your development projects, organize workspaces, collaborate with team members, and streamline your software build lifecycle from one unified dashboard.
           </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+            {session ? (
+              <Link
+                href="/workspaces"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl gradient-bg text-white font-semibold text-sm hover:opacity-90 shadow-xl shadow-indigo-500/25 transition-all group"
+              >
+                Go to Workspaces
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/register"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl gradient-bg text-white font-semibold text-sm hover:opacity-90 shadow-xl shadow-indigo-500/25 transition-all group"
+                >
+                  Create Free Account
+                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="/login"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl glass text-slate-200 font-semibold text-sm hover:text-white hover:bg-slate-800/80 transition-all border border-slate-700/80"
+                >
+                  Sign In
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Feature Highlights Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16 text-left">
+            <div className="glass-card p-6 rounded-2xl glass-card-hover border border-slate-800">
+              <div className="h-10 w-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-4">
+                <FolderKanban className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-base text-white mb-1">Multi-Tenant Workspaces</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Organize projects cleanly into dedicated workspaces with role-based member permissions.
+              </p>
+            </div>
+
+            <div className="glass-card p-6 rounded-2xl glass-card-hover border border-slate-800">
+              <div className="h-10 w-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-4">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-base text-white mb-1">Secure Authentication</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Powered by Better Auth & Fastify session validation supporting Email/Password and GitHub OAuth.
+              </p>
+            </div>
+
+            <div className="glass-card p-6 rounded-2xl glass-card-hover border border-slate-800">
+              <div className="h-10 w-10 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center text-pink-400 mb-4">
+                <Users className="h-5 w-5" />
+              </div>
+              <h3 className="font-bold text-base text-white mb-1">Team Collaboration</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Invite developers, manage project repositories, and track high-level workspace activity in real-time.
+              </p>
+            </div>
+          </div>
         </div>
       </main>
+
+      {/* Footer */}
+      <footer className="glass border-t border-slate-800/80 py-6 px-6 text-center text-xs text-slate-500">
+        <div className="mx-auto max-w-7xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p>© 2026 Developer Workspace System. All rights reserved.</p>
+          <div className="flex items-center gap-4 text-slate-400">
+            <span className="font-mono text-[11px]">v0.1 MVP</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

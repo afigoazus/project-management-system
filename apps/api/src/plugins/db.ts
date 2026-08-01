@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import { FastifyPluginAsync } from "fastify";
+import type { FastifyPluginAsync } from "fastify";
 import { db } from "@workspace/database";
 
 declare module "fastify" {
