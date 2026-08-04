@@ -1,18 +1,20 @@
-import { z } from "zod";
+import { Type, type Static } from "@sinclair/typebox";
 
-export const createWorkspaceSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  slug: z.string().min(2).optional(),
+
+export const createWorkspaceSchema = Type.Object({
+  name: Type.String({ minLength: 2 }),
+  slug: Type.Optional(Type.String({ minLength: 2 })),
 });
 
-export const getWorkspaceByIdSchema = z.object({
-  id: z.string(),
+export const getWorkspaceByIdSchema = Type.Object({
+  id: Type.String(),
 });
 
-export const addWorkspaceMemberSchema = z.object({
-  email: z.string().email(),
-  role: z.enum(["ADMIN", "MEMBER"]).default("MEMBER"),
+export const addWorkspaceMemberSchema = Type.Object({
+  email: Type.String({ format: "email" }),
+  role: Type.Enum({ ADMIN: "ADMIN", MEMBER: "MEMBER" }, { default: "MEMBER" }),
 });
 
-export type CreateWorkspaceInput = z.infer<typeof createWorkspaceSchema>;
-export type AddWorkspaceMemberInput = z.infer<typeof addWorkspaceMemberSchema>;
+export type CreateWorkspaceInput = Static<typeof createWorkspaceSchema>;
+export type AddWorkspaceMemberInput = Static<typeof addWorkspaceMemberSchema>;
+

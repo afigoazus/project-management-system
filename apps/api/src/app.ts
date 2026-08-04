@@ -1,23 +1,16 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
-import {
-  serializerCompiler,
-  validatorCompiler,
-  hasZodFastifySchemaValidationErrors,
-} from "fastify-type-provider-zod";
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { env } from "./config/env";
 import dbPlugin from "./plugins/db";
 import authPlugin from "./plugins/auth";
+import docsPlugin from "./plugins/docs";
 import appRoutes from "./app/route";
 
 export function buildApp() {
   const app = Fastify({
     logger: true,
-  });
-
-  // Configure validation
-  app.setValidatorCompiler(validatorCompiler);
-  app.setSerializerCompiler(serializerCompiler);
+  }).withTypeProvider<TypeBoxTypeProvider>();
 
   return app;
 }
@@ -31,30 +24,32 @@ export async function initializeApp() {
     credentials: true,
   });
 
-  // Register DB & Auth Plugins
+  // Register DB, Auth & OpenAPI Docs Plugins
   await app.register(dbPlugin);
   await app.register(authPlugin);
+  await app.register(docsPlugin);
 
   // Register All Feature Routes
   await app.register(appRoutes);
 
   // Error Handler
   app.setErrorHandler((error, _request, reply) => {
-    if (hasZodFastifySchemaValidationErrors(error)) {
+    const err = error as { statusCode?: number; message?: string; validation?: unknown };
+    if (err.validation) {
       return reply.status(400).send({
         statusCode: 400,
         error: "Bad Request",
         message: "Validation failed",
-        validation: error.validation,
+        validation: err.validation,
       });
     }
 
-    const err = error as { statusCode?: number; message?: string };
     app.log.error(error);
     return reply.status(err.statusCode || 500).send({
       message: err.message || "Internal Server Error",
     });
   });
+
 
   // Health check Route
   app.get("/", async () => {
@@ -66,3 +61,4 @@ export async function initializeApp() {
 
   return app;
 }
+
