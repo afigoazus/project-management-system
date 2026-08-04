@@ -1,10 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { createProjectSchema, createProjectParamsSchema, getProjectParamsSchema } from "./schema";
 import { ProjectService } from "./service";
 
 export const projectRoutes: FastifyPluginAsync = async (fastify) => {
-  const app = fastify.withTypeProvider<ZodTypeProvider>();
+  const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
 
   app.addHook("onRequest", fastify.authenticate);
 
@@ -13,6 +13,8 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
     "/workspaces/:workspaceId/projects",
     {
       schema: {
+        tags: ["Project"],
+        summary: "Create a project in a workspace",
         params: createProjectParamsSchema,
         body: createProjectSchema,
       },
@@ -41,6 +43,8 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
     "/projects/:id",
     {
       schema: {
+        tags: ["Project"],
+        summary: "Get project detail by ID",
         params: getProjectParamsSchema,
       },
     },
@@ -62,3 +66,4 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 };
+

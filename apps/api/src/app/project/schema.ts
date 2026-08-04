@@ -1,17 +1,21 @@
-import { z } from "zod";
+import { Type, type Static } from "@sinclair/typebox";
 
-export const createProjectSchema = z.object({
-  name: z.string().min(2, "Project name must be at least 2 characters"),
-  description: z.string().optional(),
-  githubRepoUrl: z.string().url("Invalid GitHub URL").or(z.literal("")).optional(),
+
+export const createProjectSchema = Type.Object({
+  name: Type.String({ minLength: 2 }),
+  description: Type.Optional(Type.String()),
+  githubRepoUrl: Type.Optional(
+    Type.Union([Type.String({ format: "uri" }), Type.Literal("")])
+  ),
 });
 
-export const getProjectParamsSchema = z.object({
-  id: z.string(),
+export const getProjectParamsSchema = Type.Object({
+  id: Type.String(),
 });
 
-export const createProjectParamsSchema = z.object({
-  workspaceId: z.string(),
+export const createProjectParamsSchema = Type.Object({
+  workspaceId: Type.String(),
 });
 
-export type CreateProjectInput = z.infer<typeof createProjectSchema>;
+export type CreateProjectInput = Static<typeof createProjectSchema>;
+

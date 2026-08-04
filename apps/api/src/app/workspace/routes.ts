@@ -1,10 +1,10 @@
 import type { FastifyPluginAsync } from "fastify";
-import type { ZodTypeProvider } from "fastify-type-provider-zod";
+import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { createWorkspaceSchema, getWorkspaceByIdSchema, addWorkspaceMemberSchema } from "./schema";
 import { WorkspaceService } from "./service";
 
 export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
-  const app = fastify.withTypeProvider<ZodTypeProvider>();
+  const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
 
   app.addHook("onRequest", fastify.authenticate);
 
@@ -13,6 +13,8 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
     "/workspaces",
     {
       schema: {
+        tags: ["Workspace"],
+        summary: "Create a new workspace",
         body: createWorkspaceSchema,
       },
     },
@@ -25,18 +27,29 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
   );
 
   // 2. Get User Workspaces
-  app.get("/workspaces", async (request, reply) => {
-    const userId = request.user!.id;
-    const service = new WorkspaceService(fastify.db);
-    const workspaces = await service.getUserWorkspaces(userId);
-    return reply.send({ workspaces });
-  });
+  app.get(
+    "/workspaces",
+    {
+      schema: {
+        tags: ["Workspace"],
+        summary: "Get workspaces of authenticated user",
+      },
+    },
+    async (request, reply) => {
+      const userId = request.user!.id;
+      const service = new WorkspaceService(fastify.db);
+      const workspaces = await service.getUserWorkspaces(userId);
+      return reply.send({ workspaces });
+    }
+  );
 
   // 3. Get Workspace Detail
   app.get(
     "/workspaces/:id",
     {
       schema: {
+        tags: ["Workspace"],
+        summary: "Get workspace by ID",
         params: getWorkspaceByIdSchema,
       },
     },
@@ -63,6 +76,8 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
     "/workspaces/:id/members",
     {
       schema: {
+        tags: ["Workspace"],
+        summary: "Add a member to workspace",
         params: getWorkspaceByIdSchema,
         body: addWorkspaceMemberSchema,
       },
@@ -96,3 +111,4 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
     }
   );
 };
+
