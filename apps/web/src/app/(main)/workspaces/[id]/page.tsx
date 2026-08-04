@@ -8,6 +8,7 @@ import { Navbar } from "@/features/home/components/Navbar";
 import { CreateProjectModal } from "@/features/project/components/CreateProjectModal";
 import { AddMemberModal } from "@/features/workspace/components/AddMemberModal";
 import Link from "next/link";
+import Image from "next/image";
 import {
   FolderKanban,
   Users,
@@ -246,9 +247,11 @@ export default function WorkspaceDetailPage() {
                   <div key={m.id} className="pt-3 first:pt-0 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       {m.user.image ? (
-                        <img
+                        <Image
                           src={m.user.image}
                           alt={m.user.name}
+                          width={32}
+                          height={32}
                           className="h-8 w-8 rounded-full border border-slate-700 object-cover"
                         />
                       ) : (

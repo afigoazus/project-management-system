@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useSession, signOut } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { LayoutGrid, LogOut, User, FolderKanban, Plus } from "lucide-react";
@@ -55,9 +56,11 @@ export function Navbar({ onOpenCreateWorkspace }: { onOpenCreateWorkspace?: () =
               <div className="flex items-center gap-3 pl-2 border-l border-slate-800">
                 <div className="flex items-center gap-2.5">
                   {session.user.image ? (
-                    <img
+                    <Image
                       src={session.user.image}
                       alt={session.user.name || "User"}
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full border border-indigo-500/30 object-cover"
                     />
                   ) : (
