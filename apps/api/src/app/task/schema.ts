@@ -30,7 +30,9 @@ export const updateTaskSchema = Type.Object({
   description: Type.Optional(Type.Union([Type.String(), Type.Null()])),
   status: Type.Optional(TaskStatusEnum),
   priority: Type.Optional(TaskPriorityEnum),
-  dueDate: Type.Optional(Type.Union([Type.String({ format: "date-time" }), Type.Null()])),
+  dueDate: Type.Optional(
+    Type.Union([Type.String({ format: "date-time" }), Type.Null()]),
+  ),
   assigneeId: Type.Optional(Type.Union([Type.String(), Type.Null()])),
 });
 
