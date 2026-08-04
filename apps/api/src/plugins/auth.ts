@@ -1,7 +1,8 @@
 import fp from "fastify-plugin";
 import type { FastifyPluginAsync, FastifyRequest, FastifyReply } from "fastify";
-import { toNodeHandler, fromNodeHeaders } from "better-auth/node";
+import { toNodeHandler } from "better-auth/node";
 import { auth } from "../lib/auth";
+import { authenticateMiddleware } from "../middleware/auth.middleware";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -20,33 +21,7 @@ const authPlugin: FastifyPluginAsync = fp(async (fastify) => {
   });
 
   // Decorator to protect routes requiring authentication
-  fastify.decorate(
-    "authenticate",
-    async (request: FastifyRequest, reply: FastifyReply) => {
-      try {
-        const session = await auth.api.getSession({
-          headers: fromNodeHeaders(request.headers),
-        });
-
-        if (!session) {
-          return reply.status(401).send({
-            statusCode: 401,
-            error: "Unauthorized",
-            message: "Authentication required",
-          });
-        }
-
-        request.user = session.user;
-        request.session = session.session;
-      } catch (err) {
-        return reply.status(401).send({
-          statusCode: 401,
-          error: "Unauthorized",
-          message: "Invalid or expired session",
-        });
-      }
-    }
-  );
+  fastify.decorate("authenticate", authenticateMiddleware);
 });
 
 export default authPlugin;

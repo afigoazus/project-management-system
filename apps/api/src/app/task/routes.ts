@@ -1,5 +1,6 @@
 import type { FastifyPluginAsync } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
+import { Type } from "@sinclair/typebox";
 import {
   createTaskSchema,
   updateTaskSchema,
@@ -8,6 +9,8 @@ import {
   taskParamsSchema,
 } from "./schema";
 import { TaskService } from "./service";
+import { commonErrorResponses } from "../../lib/error-schemas";
+import { forbidden, notFound } from "../../lib/http-response";
 
 export const taskRoutes: FastifyPluginAsync = async (fastify) => {
   const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
@@ -21,7 +24,12 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ["Task"],
         summary: "Get all tasks for a project",
+        description: "Retrieves all tasks associated with a specific project if the user has access.",
         params: getProjectTasksParamsSchema,
+        response: {
+          200: Type.Object({ tasks: Type.Array(Type.Any()) }, { description: "List of project tasks" }),
+          ...commonErrorResponses,
+        },
       },
     },
     async (request, reply) => {
@@ -31,11 +39,7 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
 
       const hasAccess = await service.checkProjectAccess(projectId, userId);
       if (!hasAccess) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: "Forbidden",
-          message: "You do not have access to this project",
-        });
+        return forbidden(reply, "You do not have access to this project");
       }
 
       const tasks = await service.getTasksByProjectId(projectId);
@@ -50,8 +54,13 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ["Task"],
         summary: "Create a task in a project",
+        description: "Creates a new task in the specified project.",
         params: getProjectTasksParamsSchema,
         body: createTaskSchema,
+        response: {
+          201: Type.Object({ task: Type.Any() }, { description: "Task created successfully" }),
+          ...commonErrorResponses,
+        },
       },
     },
     async (request, reply) => {
@@ -61,11 +70,7 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
 
       const hasAccess = await service.checkProjectAccess(projectId, userId);
       if (!hasAccess) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: "Forbidden",
-          message: "You do not have access to this project",
-        });
+        return forbidden(reply, "You do not have access to this project");
       }
 
       const task = await service.createTask(projectId, userId, request.body);
@@ -80,8 +85,13 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ["Task"],
         summary: "Update task details",
+        description: "Updates an existing task's title, description, status, priority, or assignee.",
         params: taskParamsSchema,
         body: updateTaskSchema,
+        response: {
+          200: Type.Object({ task: Type.Any() }, { description: "Task updated successfully" }),
+          ...commonErrorResponses,
+        },
       },
     },
     async (request, reply) => {
@@ -91,20 +101,12 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
 
       const existingTask = await service.getTaskById(id);
       if (!existingTask) {
-        return reply.status(404).send({
-          statusCode: 404,
-          error: "Not Found",
-          message: "Task not found",
-        });
+        return notFound(reply, "Task not found");
       }
 
       const hasAccess = await service.checkProjectAccess(existingTask.projectId, userId);
       if (!hasAccess) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: "Forbidden",
-          message: "You do not have access to this project",
-        });
+        return forbidden(reply, "You do not have access to this project");
       }
 
       const task = await service.updateTask(id, request.body);
@@ -119,8 +121,13 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ["Task"],
         summary: "Reorder task position or status",
+        description: "Moves a task to a new Kanban column (status) or reorders its position index.",
         params: taskParamsSchema,
         body: reorderTaskSchema,
+        response: {
+          200: Type.Object({ task: Type.Any() }, { description: "Task reordered successfully" }),
+          ...commonErrorResponses,
+        },
       },
     },
     async (request, reply) => {
@@ -130,20 +137,12 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
 
       const existingTask = await service.getTaskById(id);
       if (!existingTask) {
-        return reply.status(404).send({
-          statusCode: 404,
-          error: "Not Found",
-          message: "Task not found",
-        });
+        return notFound(reply, "Task not found");
       }
 
       const hasAccess = await service.checkProjectAccess(existingTask.projectId, userId);
       if (!hasAccess) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: "Forbidden",
-          message: "You do not have access to this project",
-        });
+        return forbidden(reply, "You do not have access to this project");
       }
 
       const task = await service.reorderTask(id, request.body);
@@ -158,7 +157,12 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
       schema: {
         tags: ["Task"],
         summary: "Delete a task",
+        description: "Deletes a task by ID.",
         params: taskParamsSchema,
+        response: {
+          200: Type.Object({ message: Type.String() }, { description: "Task deleted successfully" }),
+          ...commonErrorResponses,
+        },
       },
     },
     async (request, reply) => {
@@ -168,20 +172,12 @@ export const taskRoutes: FastifyPluginAsync = async (fastify) => {
 
       const existingTask = await service.getTaskById(id);
       if (!existingTask) {
-        return reply.status(404).send({
-          statusCode: 404,
-          error: "Not Found",
-          message: "Task not found",
-        });
+        return notFound(reply, "Task not found");
       }
 
       const hasAccess = await service.checkProjectAccess(existingTask.projectId, userId);
       if (!hasAccess) {
-        return reply.status(403).send({
-          statusCode: 403,
-          error: "Forbidden",
-          message: "You do not have access to this project",
-        });
+        return forbidden(reply, "You do not have access to this project");
       }
 
       await service.deleteTask(id);

@@ -8,12 +8,15 @@
 
 ---
 
-## 🏆 Ringkasan Hasil Penilaian
+## 🏆 Ringkasan Hasil Penilaian (Updated)
 
-| Metrik Penilaian | Skor | Predikat (Grade) | Status |
-| :--- | :---: | :---: | :--- |
-| **API Scorecard (Keseluruhan)** | **46.03 / 100** | **F** | ⚠️ Memerlukan Perbaikan Dokumen & Skema |
-| **API Linter (Konvensi REST)** | **95.73 / 100** | **A** | ✅ Penamaan & Struktur URL Sangat Baik |
+| Metrik Penilaian | Awal (v1) | Setelah P1 & P2 | Setelah P3 | Predikat (Grade) | Status |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **API Scorecard (Keseluruhan)** | 46.03 / 100 | 55.33 / 100 | **62.76 / 100** | **D (+16.73 pts)** | 📈 Meningkat Pesat |
+| **API Linter (Konvensi REST)** | 95.73 / 100 | 95.73 / 100 | **100.0 / 100** | **A+ (Perfect)** | 🎉 0 Errors & Warnings |
+| **Security Score** | 20.00% | 64.00% | **64.00%** | **D** | ✅ Otorisasi Terkonfigurasi |
+| **Documentation Score** | 50.00% | 52.50% | **69.17%** | **D (+19.17 pts)** | ✅ Respon & Deskripsi Terisi |
+| **Usability Score** | 33.00% | 33.00% | **50.78%** | **F (+17.78 pts)** | ✅ Skema Error Terstruktur |
 
 ---
 
@@ -21,19 +24,28 @@
 
 | Kategori | Bobot | Skor | Grade | Catatan & Analisis |
 | :--- | :---: | :---: | :---: | :--- |
-| **Consistency (Konsistensi)** | 30% | 83.28% | **B** | Struktur penamaan URL (`/workspaces`, `/projects`, `/tasks`) dan penggunaan HTTP Method (GET, POST, PATCH, DELETE) sudah konsisten dan sesuai standar REST. |
-| **Documentation (Dokumentasi)** | 20% | 50.00% | **F** | Rute API belum dilengkapi dengan atribut `summary`, `description`, dan contoh payload pada schema Fastify. |
-| **Security (Keamanan)** | 20% | 20.00% | **F** | Skema autentikasi (`securitySchemes` & `security`) belum terdaftar secara eksplisit di spesifikasi OpenAPI Swagger. |
-| **Usability (Kemudahan Penggunaan)** | 15% | 33.00% | **F** | Skema respon untuk error umum (400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error) belum terdefinisi di skema rute. |
-| **Performance (Kinerja)** | 15% | 14.00% | **F** | Endpoint pengambil daftar/koleksi data (`GET /workspaces`, `GET /projects/{projectId}/tasks`) belum mendukung parameter paginasi (`page`, `limit`, atau `cursor`). |
+| **Consistency (Konsistensi)** | 30% | **88.04%** | **B** | Struktur penamaan URL dan pemetaan metode HTTP sangat konsisten. |
+| **Documentation (Dokumentasi)** | 20% | **69.17%** | **D** | **[SELESAI P3]** Seluruh 11 rute telah dilengkapi atribut `summary`, `description`, dan `response` schema. |
+| **Security (Keamanan)** | 20% | **64.00%** | **D** | **[SELESAI P2]** Skema autentikasi `bearerAuth` telah dikonfigurasi di `apps/api/src/plugins/docs.ts`. |
+| **Usability (Kemudahan Penggunaan)** | 15% | **50.78%** | **F** | **[SELESAI P3]** Skema respon error umum (400, 401, 403, 404, 500) telah diseragamkan dengan helper `commonErrorResponses`. |
+| **Performance (Kinerja)** | 15% | 14.00% | **F** | Endpoint pengambil daftar/koleksi data (`GET /workspaces`, `GET /projects/{projectId}/tasks`) direkomendasikan menambahkan paginasi (Prioritas 4). |
 
 ---
 
-## 🔍 Temuan Utama & Rekomendasi
+## 🔍 Temuan Utama & Perbaikan yang Telah Dilakukan
 
-### 1. Deklarasi Skema Keamanan (`securitySchemes`)
-* **Masalah:** Meskipun middleware autentikasi `fastify.authenticate` telah diterapkan pada rute backend, spesifikasi OpenAPI tidak mendeklarasikan skema autentikasi (seperti Bearer Token / Cookie). Hal ini menyebabkan API docs (Scalar/Swagger UI) tidak menyediakan tombol input token / otorisasi.
-* **Solusi:** Daftarkan `securitySchemes` pada plugin Swagger di [`apps/api/src/plugins/docs.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/plugins/docs.ts).
+### 1. Verifikasi Rute Auth (`authPlugin`)
+* **Temuan:** Rute autentikasi Better Auth `/api/auth/*` dipastikan telah ditangani dengan benar oleh `authPlugin` pada [`apps/api/src/plugins/auth.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/plugins/auth.ts).
+
+### 2. Deklarasi Skema Keamanan (`securitySchemes`) — [SELESAI ✅]
+* **Perbaikan:** `securitySchemes` (HTTP Bearer Token) dan `security` requirement telah berhasil ditambahkan ke [`apps/api/src/plugins/docs.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/plugins/docs.ts).
+
+### 3. Standarisasi Respon Error & Deskripsi Rute — [SELESAI ✅]
+* **Perbaikan:**
+  - Membuat berkas helper error terpusat [`apps/api/src/lib/error-schemas.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/lib/error-schemas.ts).
+  - Memperbarui global error handler di [`apps/api/src/app.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/app.ts) agar mengembalikan format JSON yang konsisten (`{ statusCode, error, message }`).
+  - Menerapkan `commonErrorResponses`, deskripsi (`description`), dan skema sukses (200 / 201) pada seluruh rute di [`workspace/routes.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/app/workspace/routes.ts), [`project/routes.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/app/project/routes.ts), dan [`task/routes.ts`](file:///home/afigo/projects/personal/project-management/apps/api/src/app/task/routes.ts).
+* **Dampak:** **API Linter meraih skor sempurna 100.0/100 (0 errors & 0 warnings)**.
 
 ### 2. Penambahan Deskripsi & Dokumentasi Rute
 * **Masalah:** OpenAPI Linter mendeteksi 11 endpoint yang belum memiliki deskripsi (`description`) dan ringkasan fungsi (`summary`).
