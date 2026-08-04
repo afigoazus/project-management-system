@@ -2,9 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { Type } from "@sinclair/typebox";
 import { createProjectSchema, createProjectParamsSchema, getProjectParamsSchema } from "./schema";
-import { ProjectService } from "./service";
+import { projectController } from "./controller";
 import { commonErrorResponses } from "../../lib/error-schemas";
-import { forbidden, notFound } from "../../lib/http-response";
 
 export const projectRoutes: FastifyPluginAsync = async (fastify) => {
   const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
@@ -22,24 +21,12 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
         params: createProjectParamsSchema,
         body: createProjectSchema,
         response: {
-          201: Type.Object({ project: Type.Any() }, { description: "Project created successfully" }),
+          201: Type.Object({ status: Type.String(), message: Type.String(), project: Type.Any() }, { description: "Project created successfully" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const { workspaceId } = request.params;
-      const userId = request.user!.id;
-      const service = new ProjectService(fastify.db);
-
-      const member = await service.checkWorkspaceMember(workspaceId, userId);
-      if (!member) {
-        return forbidden(reply, "You are not a member of this workspace");
-      }
-
-      const project = await service.createProject(workspaceId, request.body);
-      return reply.status(201).send({ project });
-    }
+    async (request, reply) => projectController.createProject(request, reply, fastify)
   );
 
   // 2. Get Project Detail
@@ -52,23 +39,11 @@ export const projectRoutes: FastifyPluginAsync = async (fastify) => {
         description: "Retrieves details of a project including workspace membership check.",
         params: getProjectParamsSchema,
         response: {
-          200: Type.Object({ project: Type.Any() }, { description: "Project details" }),
+          200: Type.Object({ status: Type.String(), message: Type.String(), project: Type.Any() }, { description: "Project details" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const { id } = request.params;
-      const userId = request.user!.id;
-      const service = new ProjectService(fastify.db);
-
-      const project = await service.getProjectById(id, userId);
-      if (!project) {
-        return notFound(reply, "Project not found or access denied");
-      }
-
-      return reply.send({ project });
-    }
+    async (request, reply) => projectController.getProjectById(request, reply, fastify)
   );
 };
-

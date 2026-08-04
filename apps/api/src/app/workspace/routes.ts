@@ -2,9 +2,8 @@ import type { FastifyPluginAsync } from "fastify";
 import type { TypeBoxTypeProvider } from "@fastify/type-provider-typebox";
 import { Type } from "@sinclair/typebox";
 import { createWorkspaceSchema, getWorkspaceByIdSchema, addWorkspaceMemberSchema } from "./schema";
-import { WorkspaceService } from "./service";
+import { workspaceController } from "./controller";
 import { commonErrorResponses } from "../../lib/error-schemas";
-import { forbidden, notFound } from "../../lib/http-response";
 
 export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
   const app = fastify.withTypeProvider<TypeBoxTypeProvider>();
@@ -21,17 +20,12 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
         description: "Creates a new workspace for the authenticated user and sets the user as OWNER.",
         body: createWorkspaceSchema,
         response: {
-          201: Type.Object({ workspace: Type.Any() }, { description: "Workspace created successfully" }),
+          201: Type.Object({ status: Type.String(), message: Type.String(), workspace: Type.Any() }, { description: "Workspace created successfully" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const userId = request.user!.id;
-      const service = new WorkspaceService(fastify.db);
-      const workspace = await service.createWorkspace(userId, request.body);
-      return reply.status(201).send({ workspace });
-    }
+    async (request, reply) => workspaceController.createWorkspace(request, reply, fastify)
   );
 
   // 2. Get User Workspaces
@@ -43,17 +37,12 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
         summary: "Get workspaces of authenticated user",
         description: "Retrieves all workspaces accessible by the currently authenticated user.",
         response: {
-          200: Type.Object({ workspaces: Type.Array(Type.Any()) }, { description: "List of user workspaces" }),
+          200: Type.Object({ status: Type.String(), message: Type.String(), workspaces: Type.Array(Type.Any()) }, { description: "List of user workspaces" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const userId = request.user!.id;
-      const service = new WorkspaceService(fastify.db);
-      const workspaces = await service.getUserWorkspaces(userId);
-      return reply.send({ workspaces });
-    }
+    async (request, reply) => workspaceController.getUserWorkspaces(request, reply, fastify)
   );
 
   // 3. Get Workspace Detail
@@ -66,23 +55,12 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
         description: "Retrieves detailed information of a specific workspace if the user is a member.",
         params: getWorkspaceByIdSchema,
         response: {
-          200: Type.Object({ workspace: Type.Any() }, { description: "Workspace details" }),
+          200: Type.Object({ status: Type.String(), message: Type.String(), workspace: Type.Any() }, { description: "Workspace details" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const { id } = request.params;
-      const userId = request.user!.id;
-      const service = new WorkspaceService(fastify.db);
-
-      const workspace = await service.getWorkspaceById(userId, id);
-      if (!workspace) {
-        return notFound(reply, "Workspace not found or access denied");
-      }
-
-      return reply.send({ workspace });
-    }
+    async (request, reply) => workspaceController.getWorkspaceById(request, reply, fastify)
   );
 
   // 4. Add Member
@@ -96,30 +74,11 @@ export const workspaceRoutes: FastifyPluginAsync = async (fastify) => {
         params: getWorkspaceByIdSchema,
         body: addWorkspaceMemberSchema,
         response: {
-          201: Type.Object({ member: Type.Any() }, { description: "Member added successfully" }),
+          201: Type.Object({ status: Type.String(), message: Type.String(), member: Type.Any() }, { description: "Member added successfully" }),
           ...commonErrorResponses,
         },
       },
     },
-    async (request, reply) => {
-      const { id: workspaceId } = request.params;
-      const { email, role } = request.body;
-      const requesterId = request.user!.id;
-      const service = new WorkspaceService(fastify.db);
-
-      const requesterMember = await service.getMemberRole(workspaceId, requesterId);
-      if (!requesterMember || (requesterMember.role !== "OWNER" && requesterMember.role !== "ADMIN")) {
-        return forbidden(reply, "Only workspace owners or admins can add members");
-      }
-
-      const targetUser = await service.findUserByEmail(email);
-      if (!targetUser) {
-        return notFound(reply, `User with email '${email}' not found`);
-      }
-
-      const member = await service.addMember(workspaceId, targetUser.id, role);
-      return reply.status(201).send({ member });
-    }
+    async (request, reply) => workspaceController.addMember(request, reply, fastify)
   );
 };
-

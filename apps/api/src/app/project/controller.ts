@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 import { ProjectService } from "./service";
 import type { CreateProjectInput } from "./schema";
+import { forbidden, notFound, sendSuccess } from "../../lib/http-response";
 
 export class ProjectController {
   private service(fastify: FastifyInstance) {
@@ -18,15 +19,11 @@ export class ProjectController {
     const service = this.service(fastify);
     const member = await service.checkWorkspaceMember(workspaceId, userId);
     if (!member) {
-      return reply.status(403).send({
-        statusCode: 403,
-        error: "Forbidden",
-        message: "You are not a member of this workspace",
-      });
+      return forbidden(reply, "You are not a member of this workspace");
     }
 
     const project = await service.createProject(workspaceId, request.body);
-    return reply.status(201).send({ project });
+    return sendSuccess(reply, 201, "Project created successfully", "project", project);
   }
 
   async getProjectById(
@@ -39,14 +36,10 @@ export class ProjectController {
 
     const project = await this.service(fastify).getProjectById(id, userId);
     if (!project) {
-      return reply.status(404).send({
-        statusCode: 404,
-        error: "Not Found",
-        message: "Project not found or access denied",
-      });
+      return notFound(reply, "Project not found or access denied");
     }
 
-    return reply.send({ project });
+    return sendSuccess(reply, 200, "Project detail retrieved successfully", "project", project);
   }
 }
 
