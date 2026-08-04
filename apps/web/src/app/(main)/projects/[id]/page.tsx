@@ -18,6 +18,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 
+import { KanbanBoard } from "@/features/task/components/KanbanBoard";
+import type { Task } from "@/features/task/types";
+
 interface ProjectDetail {
   id: string;
   name: string;
@@ -39,14 +42,19 @@ export default function ProjectDetailPage() {
   const router = useRouter();
 
   const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   const fetchProjectDetail = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await apiFetch<{ project: ProjectDetail }>(`/projects/${projectId}`);
-      setProject(res.project);
+      const [projRes, tasksRes] = await Promise.all([
+        apiFetch<{ project: ProjectDetail }>(`/projects/${projectId}`),
+        apiFetch<{ tasks: Task[] }>(`/projects/${projectId}/tasks`),
+      ]);
+      setProject(projRes.project);
+      setTasks(tasksRes.tasks || []);
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to load project details");
     } finally {
@@ -61,6 +69,7 @@ export default function ProjectDetailPage() {
       fetchProjectDetail();
     }
   }, [session, sessionPending, projectId, router, fetchProjectDetail]);
+
 
   if (sessionPending || loading) {
     return (
@@ -197,6 +206,11 @@ export default function ProjectDetailPage() {
           </div>
         </div>
 
+        {/* Kanban Board Section */}
+        <div className="pt-4">
+          <KanbanBoard projectId={project.id} initialTasks={tasks} />
+        </div>
+
         {/* Back Link */}
         <div>
           <Link
@@ -211,3 +225,4 @@ export default function ProjectDetailPage() {
     </div>
   );
 }
+
