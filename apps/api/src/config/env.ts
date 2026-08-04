@@ -1,4 +1,10 @@
+import path from "node:path";
+import dotenv from "dotenv";
 import { z } from "zod";
+
+// Load .env dari root monorepo jika belum terdefinisi
+dotenv.config({ path: path.resolve(process.cwd(), "../../.env") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
 
 const envSchema = z.object({
   PORT: z.coerce.number().default(4000),
