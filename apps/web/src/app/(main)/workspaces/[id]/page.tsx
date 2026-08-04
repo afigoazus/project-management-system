@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { apiFetch } from "@/lib/api";
-import { Navbar } from "@/components/Navbar";
-import { CreateProjectModal } from "@/components/CreateProjectModal";
-import { AddMemberModal } from "@/components/AddMemberModal";
+import { Navbar } from "@/features/home/components/Navbar";
+import { CreateProjectModal } from "@/features/project/components/CreateProjectModal";
+import { AddMemberModal } from "@/features/workspace/components/AddMemberModal";
 import Link from "next/link";
 import {
   FolderKanban,
