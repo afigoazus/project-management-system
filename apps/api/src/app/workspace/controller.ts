@@ -1,6 +1,7 @@
 import type { FastifyRequest, FastifyReply, FastifyInstance } from "fastify";
 import { WorkspaceService } from "./service";
 import type { CreateWorkspaceInput, AddWorkspaceMemberInput } from "./schema";
+import { forbidden, notFound, sendSuccess } from "../../lib/http-response";
 
 export class WorkspaceController {
   private service(fastify: FastifyInstance) {
@@ -14,7 +15,7 @@ export class WorkspaceController {
   ) {
     const userId = request.user!.id;
     const workspace = await this.service(fastify).createWorkspace(userId, request.body);
-    return reply.status(201).send({ workspace });
+    return sendSuccess(reply, 201, "Workspace created successfully", "workspace", workspace);
   }
 
   async getUserWorkspaces(
@@ -24,7 +25,7 @@ export class WorkspaceController {
   ) {
     const userId = request.user!.id;
     const workspaces = await this.service(fastify).getUserWorkspaces(userId);
-    return reply.send({ workspaces });
+    return sendSuccess(reply, 200, "Workspaces retrieved successfully", "workspaces", workspaces);
   }
 
   async getWorkspaceById(
@@ -37,14 +38,10 @@ export class WorkspaceController {
 
     const workspace = await this.service(fastify).getWorkspaceById(userId, id);
     if (!workspace) {
-      return reply.status(404).send({
-        statusCode: 404,
-        error: "Not Found",
-        message: "Workspace not found or access denied",
-      });
+      return notFound(reply, "Workspace not found or access denied");
     }
 
-    return reply.send({ workspace });
+    return sendSuccess(reply, 200, "Workspace detail retrieved successfully", "workspace", workspace);
   }
 
   async addMember(
@@ -60,24 +57,16 @@ export class WorkspaceController {
     const requesterMember = await service.getMemberRole(workspaceId, requesterId);
 
     if (!requesterMember || (requesterMember.role !== "OWNER" && requesterMember.role !== "ADMIN")) {
-      return reply.status(403).send({
-        statusCode: 403,
-        error: "Forbidden",
-        message: "Only workspace owners or admins can add members",
-      });
+      return forbidden(reply, "Only workspace owners or admins can add members");
     }
 
     const targetUser = await service.findUserByEmail(email);
     if (!targetUser) {
-      return reply.status(404).send({
-        statusCode: 404,
-        error: "Not Found",
-        message: `User with email '${email}' not found`,
-      });
+      return notFound(reply, `User with email '${email}' not found`);
     }
 
     const member = await service.addMember(workspaceId, targetUser.id, role);
-    return reply.status(201).send({ member });
+    return sendSuccess(reply, 201, "Member added successfully", "member", member);
   }
 }
 
