@@ -31,8 +31,8 @@ export default function RegisterPage() {
       } else {
         router.push("/workspaces");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to create account");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to create account");
     } finally {
       setLoading(false);
     }
@@ -44,8 +44,8 @@ export default function RegisterPage() {
         provider: "github",
         callbackURL: `${window.location.origin}/workspaces`,
       });
-    } catch (err: any) {
-      setError(err.message || "Failed to sign up with GitHub");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to sign up with GitHub");
     }
   };
 

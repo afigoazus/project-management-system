@@ -29,8 +29,8 @@ export default function LoginPage() {
       } else {
         router.push("/workspaces");
       }
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to sign in");
     } finally {
       setLoading(false);
     }
@@ -42,8 +42,8 @@ export default function LoginPage() {
         provider: "github",
         callbackURL: `${window.location.origin}/workspaces`,
       });
-    } catch (err: any) {
-      setError(err.message || "Failed to sign in with GitHub");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to sign in with GitHub");
     }
   };
 
@@ -145,7 +145,7 @@ export default function LoginPage() {
 
         {/* Link to Register */}
         <p className="text-center text-xs text-slate-400">
-          Don't have an account yet?{" "}
+          Don&apos;t have an account yet?{" "}
           <Link href="/register" className="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors">
             Create an account
           </Link>
