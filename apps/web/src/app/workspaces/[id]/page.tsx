@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { apiFetch } from "@/lib/api";
@@ -9,17 +9,14 @@ import { CreateProjectModal } from "@/components/CreateProjectModal";
 import { AddMemberModal } from "@/components/AddMemberModal";
 import Link from "next/link";
 import {
-  Building2,
   FolderKanban,
   Users,
   Plus,
   UserPlus,
   Github,
   ArrowRight,
-  Shield,
   Loader2,
   Calendar,
-  ExternalLink,
 } from "lucide-react";
 
 interface Member {
@@ -64,17 +61,17 @@ export default function WorkspaceDetailPage() {
   const [isProjectModalOpen, setIsProjectModalOpen] = useState(false);
   const [isMemberModalOpen, setIsMemberModalOpen] = useState(false);
 
-  const fetchWorkspaceDetail = async () => {
+  const fetchWorkspaceDetail = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiFetch<{ workspace: WorkspaceDetail }>(`/workspaces/${workspaceId}`);
       setWorkspace(res.workspace);
-    } catch (err: any) {
-      setError(err.message || "Failed to load workspace details");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load workspace details");
     } finally {
       setLoading(false);
     }
-  };
+  }, [workspaceId]);
 
   useEffect(() => {
     if (!sessionPending && !session) {
@@ -82,7 +79,7 @@ export default function WorkspaceDetailPage() {
     } else if (session && workspaceId) {
       fetchWorkspaceDetail();
     }
-  }, [session, sessionPending, workspaceId, router]);
+  }, [session, sessionPending, workspaceId, router, fetchWorkspaceDetail]);
 
   if (sessionPending || loading) {
     return (

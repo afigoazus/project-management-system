@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "dev": "bun --watch src/server.ts",
-    "build": "echo 'No build step for API'"
+    "build": "echo 'No build step for API'",
+    "lint": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",

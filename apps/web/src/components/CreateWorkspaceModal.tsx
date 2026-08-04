@@ -36,8 +36,8 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
       setSlug("");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to create workspace");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to create workspace");
     } finally {
       setLoading(false);
     }

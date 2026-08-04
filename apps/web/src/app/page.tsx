@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Navbar } from "@/components/Navbar";
-import { FolderKanban, ShieldCheck, Zap, Users, ArrowRight, Github } from "lucide-react";
+import { FolderKanban, ShieldCheck, Zap, Users, ArrowRight } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 
 export default function Home() {

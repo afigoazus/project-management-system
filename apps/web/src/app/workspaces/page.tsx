@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
@@ -28,7 +28,7 @@ export default function WorkspacesPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchWorkspaces = async () => {
+  const fetchWorkspaces = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiFetch<{ workspaces: WorkspaceItem[] }>("/workspaces");
@@ -38,7 +38,7 @@ export default function WorkspacesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!sessionPending && !session) {
@@ -46,7 +46,7 @@ export default function WorkspacesPage() {
     } else if (session) {
       fetchWorkspaces();
     }
-  }, [session, sessionPending, router]);
+  }, [session, sessionPending, router, fetchWorkspaces]);
 
   if (sessionPending || (loading && workspaces.length === 0)) {
     return (
@@ -97,7 +97,7 @@ export default function WorkspacesPage() {
             <div className="space-y-1">
               <h3 className="text-base font-bold text-white">No Workspaces Found</h3>
               <p className="text-xs text-slate-400">
-                You haven't created or joined any workspaces yet. Create one to get started!
+                You haven&apos;t created or joined any workspaces yet. Create one to get started!
               </p>
             </div>
             <button

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { apiFetch } from "@/lib/api";
@@ -14,7 +14,6 @@ import {
   ExternalLink,
   Loader2,
   ArrowLeft,
-  GitBranch,
   Code2,
   CheckCircle2,
 } from "lucide-react";
@@ -43,17 +42,17 @@ export default function ProjectDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchProjectDetail = async () => {
+  const fetchProjectDetail = useCallback(async () => {
     try {
       setLoading(true);
       const res = await apiFetch<{ project: ProjectDetail }>(`/projects/${projectId}`);
       setProject(res.project);
-    } catch (err: any) {
-      setError(err.message || "Failed to load project details");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to load project details");
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
 
   useEffect(() => {
     if (!sessionPending && !session) {
@@ -61,7 +60,7 @@ export default function ProjectDetailPage() {
     } else if (session && projectId) {
       fetchProjectDetail();
     }
-  }, [session, sessionPending, projectId, router]);
+  }, [session, sessionPending, projectId, router, fetchProjectDetail]);
 
   if (sessionPending || loading) {
     return (

@@ -37,8 +37,8 @@ export function AddMemberModal({ workspaceId, isOpen, onClose, onSuccess }: AddM
       setRole("MEMBER");
       onSuccess();
       onClose();
-    } catch (err: any) {
-      setError(err.message || "Failed to add workspace member");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Failed to add workspace member");
     } finally {
       setLoading(false);
     }
