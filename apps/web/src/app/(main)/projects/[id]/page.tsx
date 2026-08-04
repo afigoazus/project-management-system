@@ -4,7 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useSession } from "@/lib/auth-client";
 import { apiFetch } from "@/lib/api";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/features/home/components/Navbar";
 import Link from "next/link";
 import {
   FolderKanban,

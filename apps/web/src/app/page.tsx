@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/features/home/components/Navbar";
 import { FolderKanban, ShieldCheck, Zap, Users, ArrowRight } from "lucide-react";
 import { useSession } from "@/lib/auth-client";
 

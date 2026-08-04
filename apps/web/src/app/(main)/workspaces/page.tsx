@@ -4,8 +4,8 @@ import { useEffect, useState, useCallback } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { Navbar } from "@/components/Navbar";
-import { CreateWorkspaceModal } from "@/components/CreateWorkspaceModal";
+import { Navbar } from "@/features/home/components/Navbar";
+import { CreateWorkspaceModal } from "@/features/workspace/components/CreateWorkspaceModal";
 import Link from "next/link";
 import { Building2, FolderKanban, Users, Plus, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
