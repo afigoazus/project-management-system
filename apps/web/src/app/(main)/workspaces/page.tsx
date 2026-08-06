@@ -1,54 +1,29 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import { useSession } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-import { apiFetch } from "@/lib/api";
+import { useWorkspaces } from "@/features/workspace/hooks/workspace.hook";
+import { useWorkspaceStore } from "@/features/workspace/stores/workspace.store";
 import { Navbar } from "@/features/home/components/Navbar";
 import { CreateWorkspaceModal } from "@/features/workspace/components/CreateWorkspaceModal";
 import Link from "next/link";
 import { Building2, FolderKanban, Users, Plus, ArrowRight, Loader2, Sparkles } from "lucide-react";
 
-interface WorkspaceItem {
-  id: string;
-  name: string;
-  slug: string;
-  ownerId: string;
-  createdAt: string;
-  _count: {
-    projects: number;
-    members: number;
-  };
-}
-
 export default function WorkspacesPage() {
   const { data: session, isPending: sessionPending } = useSession();
   const router = useRouter();
-  const [workspaces, setWorkspaces] = useState<WorkspaceItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const fetchWorkspaces = useCallback(async () => {
-    try {
-      setLoading(true);
-      const res = await apiFetch<{ workspaces: WorkspaceItem[] }>("/workspaces");
-      setWorkspaces(res.workspaces);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const { data: workspaces = [], isLoading: workspacesLoading } = useWorkspaces();
+  const { isCreateModalOpen, openCreateModal, closeCreateModal } = useWorkspaceStore();
 
   useEffect(() => {
     if (!sessionPending && !session) {
       router.push("/login");
-    } else if (session) {
-      fetchWorkspaces();
     }
-  }, [session, sessionPending, router, fetchWorkspaces]);
+  }, [session, sessionPending, router]);
 
-  if (sessionPending || (loading && workspaces.length === 0)) {
+  if (sessionPending || (workspacesLoading && workspaces.length === 0)) {
     return (
       <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100">
         <Navbar />
@@ -64,7 +39,7 @@ export default function WorkspacesPage() {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#0b0f19] text-slate-100 selection:bg-indigo-500 selection:text-white">
-      <Navbar onOpenCreateWorkspace={() => setIsModalOpen(true)} />
+      <Navbar onOpenCreateWorkspace={openCreateModal} />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10 space-y-8">
         {/* Header */}
@@ -80,7 +55,7 @@ export default function WorkspacesPage() {
           </div>
 
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={openCreateModal}
             className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl gradient-bg text-white font-semibold text-xs hover:opacity-90 shadow-lg shadow-indigo-500/20 transition-all cursor-pointer"
           >
             <Plus className="h-4 w-4" />
@@ -101,7 +76,7 @@ export default function WorkspacesPage() {
               </p>
             </div>
             <button
-              onClick={() => setIsModalOpen(true)}
+              onClick={openCreateModal}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl gradient-bg text-white font-semibold text-xs hover:opacity-90 shadow-md shadow-indigo-500/20 transition-all cursor-pointer"
             >
               <Plus className="h-4 w-4" />
@@ -156,10 +131,10 @@ export default function WorkspacesPage() {
       </main>
 
       <CreateWorkspaceModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSuccess={fetchWorkspaces}
+        isOpen={isCreateModalOpen}
+        onClose={closeCreateModal}
       />
     </div>
   );
 }
+
