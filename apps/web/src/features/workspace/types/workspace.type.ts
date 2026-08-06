@@ -18,6 +18,7 @@ export interface WorkspaceMember {
     id: string;
     name: string;
     email: string;
+    image?: string;
   };
 }
 
@@ -25,6 +26,7 @@ export interface WorkspaceProject {
   id: string;
   name: string;
   description?: string;
+  githubRepoUrl?: string;
   createdAt: string;
 }
 

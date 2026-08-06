@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
 import { X, UserPlus, Mail, Loader2, Shield } from "lucide-react";
+import { useAddWorkspaceMember } from "../hooks/workspace.hook";
 
 interface AddMemberModalProps {
   workspaceId: string;
@@ -14,35 +14,26 @@ interface AddMemberModalProps {
 export function AddMemberModal({ workspaceId, isOpen, onClose, onSuccess }: AddMemberModalProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const addMemberMutation = useAddWorkspaceMember(workspaceId);
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
 
-    try {
-      await apiFetch(`/workspaces/${workspaceId}/members`, {
-        method: "POST",
-        body: JSON.stringify({
-          email,
-          role,
-        }),
-      });
-
-      setEmail("");
-      setRole("MEMBER");
-      onSuccess();
-      onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to add workspace member");
-    } finally {
-      setLoading(false);
-    }
+    addMemberMutation.mutate(email, {
+      onSuccess: () => {
+        setEmail("");
+        setRole("MEMBER");
+        onSuccess();
+        onClose();
+      },
+    });
   };
+
+  const error = addMemberMutation.error
+    ? addMemberMutation.error.message
+    : "";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -111,10 +102,10 @@ export function AddMemberModal({ workspaceId, isOpen, onClose, onSuccess }: AddM
             </button>
             <button
               type="submit"
-              disabled={loading || !email.trim()}
+              disabled={addMemberMutation.isPending || !email.trim()}
               className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-bg text-white font-semibold text-xs hover:opacity-90 disabled:opacity-50 shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
             >
-              {loading ? (
+              {addMemberMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Adding...
