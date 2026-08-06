@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
 import { X, FolderPlus, Github, Loader2 } from "lucide-react";
+import { useCreateProject } from "../hooks/project.hook";
 
 interface CreateProjectModalProps {
   workspaceId: string;
@@ -15,37 +15,36 @@ export function CreateProjectModal({ workspaceId, isOpen, onClose, onSuccess }: 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [githubRepoUrl, setGithubRepoUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const createProjectMutation = useCreateProject();
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError("");
 
-    try {
-      await apiFetch(`/workspaces/${workspaceId}/projects`, {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          description: description.trim() || undefined,
-          githubRepoUrl: githubRepoUrl.trim() || undefined,
-        }),
-      });
-
-      setName("");
-      setDescription("");
-      setGithubRepoUrl("");
-      onSuccess();
-      onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create project");
-    } finally {
-      setLoading(false);
-    }
+    createProjectMutation.mutate(
+      {
+        workspaceId,
+        name,
+        description: description.trim() || undefined,
+        githubRepoUrl: githubRepoUrl.trim() || undefined,
+      },
+      {
+        onSuccess: () => {
+          setName("");
+          setDescription("");
+          setGithubRepoUrl("");
+          onSuccess();
+          onClose();
+        },
+      }
+    );
   };
+
+  const error = createProjectMutation.error
+    ? createProjectMutation.error.message
+    : "";
+  const loading = createProjectMutation.isPending;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
