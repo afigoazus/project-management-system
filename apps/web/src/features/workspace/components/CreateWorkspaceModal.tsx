@@ -1,47 +1,47 @@
 "use client";
 
 import { useState } from "react";
-import { apiFetch } from "@/lib/api";
+import { useCreateWorkspace } from "../hooks/workspace.hook";
 import { X, Building2, Sparkles, Loader2 } from "lucide-react";
 
 interface CreateWorkspaceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess?: () => void;
 }
 
 export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorkspaceModalProps) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const createWorkspaceMutation = useCreateWorkspace();
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError("");
 
-    try {
-      await apiFetch("/workspaces", {
-        method: "POST",
-        body: JSON.stringify({
-          name,
-          slug: slug.trim() || undefined,
-        }),
-      });
-
-      setName("");
-      setSlug("");
-      onSuccess();
-      onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to create workspace");
-    } finally {
-      setLoading(false);
-    }
+    createWorkspaceMutation.mutate(
+      {
+        name,
+        slug: slug.trim() || undefined as unknown as string,
+      },
+      {
+        onSuccess: () => {
+          setName("");
+          setSlug("");
+          onSuccess?.();
+          onClose();
+        },
+        onError: (err: unknown) => {
+          setError(err instanceof Error ? err.message : "Failed to create workspace");
+        },
+      }
+    );
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -110,10 +110,10 @@ export function CreateWorkspaceModal({ isOpen, onClose, onSuccess }: CreateWorks
             </button>
             <button
               type="submit"
-              disabled={loading || !name.trim()}
+              disabled={createWorkspaceMutation.isPending || !name.trim()}
               className="flex items-center gap-2 px-4 py-2 rounded-xl gradient-bg text-white font-semibold text-xs hover:opacity-90 disabled:opacity-50 shadow-lg shadow-indigo-500/25 transition-all cursor-pointer"
             >
-              {loading ? (
+              {createWorkspaceMutation.isPending ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Creating...
